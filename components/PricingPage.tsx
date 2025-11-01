@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Plan, PlanDetails } from '../types';
 import { PRICING_PLANS } from '../constants';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { HeroResumeVisual } from './HeroResumeVisual';
 
 interface PricingPageProps {
   onSelectPlan: (plan: Plan) => void;
@@ -46,24 +46,56 @@ const PlanCard: React.FC<{ plan: PlanDetails; onSelect: () => void }> = ({ plan,
 
 export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan }) => {
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
       <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 text-indigo-400 font-semibold">
-            <SparklesIcon /> AI Resume Builder
-          </div>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-6xl">
-            Build Your Dream Resume
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-300">
-            Choose a plan that fits your needs and let our AI-powered tools craft the perfect resume and cover letter for your next job application.
-          </p>
+        
+        {/* --- Hero Section --- */}
+        <div className="relative grid lg:grid-cols-2 gap-12 items-center mb-20 md:mb-28">
+            {/* Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-64 bg-indigo-900/50 rounded-full blur-3xl -z-10"></div>
+            
+            {/* Text Content */}
+            <div className="text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 bg-gray-800/50 border border-gray-700 px-3 py-1 rounded-full text-sm text-indigo-400 font-medium">
+                    <SparklesIcon className="w-4 h-4" /> 
+                    Powered by Gemini
+                </div>
+                <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+                    Craft a Resume That Lands Interviews
+                </h1>
+                <p className="mt-6 text-lg leading-8 text-gray-300">
+                    Our AI-powered builder helps you create professional, eye-catching resumes and cover letters in minutes. Stand out from the crowd and get your dream job.
+                </p>
+                <div className="mt-10">
+                    <a href="#pricing" className="bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/20">
+                        Choose Your Plan
+                    </a>
+                </div>
+            </div>
+            
+            {/* Visual Content */}
+            <div className="hidden lg:flex justify-center items-center">
+                <HeroResumeVisual />
+            </div>
         </div>
-        <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {PRICING_PLANS.map(plan => (
-            <PlanCard key={plan.name} plan={plan} onSelect={() => onSelectPlan(plan.name as Plan)} />
-          ))}
+        
+        {/* --- Pricing Section --- */}
+        <div id="pricing">
+            <div className="mx-auto max-w-4xl text-center">
+                <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                    Choose Your Plan
+                </h2>
+                <p className="mt-6 text-lg leading-8 text-gray-300">
+                    Pick the perfect plan to jumpstart your career. All plans are powered by advanced AI to give you the best results.
+                </p>
+            </div>
+            <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+              {PRICING_PLANS.map(plan => (
+                <PlanCard key={plan.name} plan={plan} onSelect={() => onSelectPlan(plan.name as Plan)} />
+              ))}
+            </div>
         </div>
+
       </div>
     </div>
   );
