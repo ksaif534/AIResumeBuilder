@@ -24,7 +24,8 @@ export const PRICING_PLANS: PlanDetails[] = [
     ],
     model: 'gemini-2.5-pro',
     cta: 'Get Started',
-    priceId: 'price_basic_placeholder', // Placeholder Stripe Price ID
+    // Placeholder for a Stripe Payment Link. Replace with your actual link from the Stripe Dashboard.
+    priceId: 'https://buy.stripe.com/test_3csdRx1aBfZ3g9OaEE', 
   },
   {
     name: Plan.Pro,
@@ -37,7 +38,8 @@ export const PRICING_PLANS: PlanDetails[] = [
     ],
     model: 'gemini-2.5-pro',
     cta: 'Go Pro',
-    priceId: 'price_pro_placeholder', // Placeholder Stripe Price ID
+    // Placeholder for a Stripe Payment Link. Replace with your actual link from the Stripe Dashboard.
+    priceId: 'https://buy.stripe.com/test_5kA6rB06z1jvf5K289', 
   },
 ];
 

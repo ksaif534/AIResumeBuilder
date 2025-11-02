@@ -67,16 +67,14 @@ const AppContent: React.FC = () => {
                 // User needs to purchase
                 setIsPurchasing(plan);
                 try {
-                    const { success } = await handlePurchase(planDetails);
-                    if (success) {
-                        upgradePlan(plan);
-                        setSelectedPlan(plan);
-                    } else {
-                        alert("Your payment could not be processed. Please try again.");
-                    }
+                    // This function now simulates the purchase and returns when complete.
+                    await handlePurchase(planDetails);
+                    // On "successful" simulation, upgrade the plan and show the builder.
+                    upgradePlan(plan);
+                    setSelectedPlan(plan);
                 } catch (error) {
-                    console.error("Payment handling error:", error);
-                    alert("An unexpected error occurred during payment. Please try again.");
+                    console.error("Simulated purchase failed:", error);
+                    alert("There was an issue processing your request. Please try again.");
                 } finally {
                     setIsPurchasing(null);
                 }
@@ -104,7 +102,6 @@ const AppContent: React.FC = () => {
             <Header
                 onNavigate={handleNavigate}
                 onLoginClick={() => setAuthModalState({isOpen: true, mode: 'login'})}
-                // FIX: Corrected typo in function name from 'setAuthModalS-tate' to 'setAuthModalState'.
                 onRegisterClick={() => setAuthModalState({isOpen: true, mode: 'register'})}
                 onProfileDoubleClick={() => setShowProfile(false)}
                 isBuilderActive={!!selectedPlan}
