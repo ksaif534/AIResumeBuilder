@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 interface User {
   name: string;
@@ -14,10 +14,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Lazily initialize state from localStorage on component mount
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
+
+  // Effect to sync user state changes to localStorage
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
+    } catch (error) {
+      console.error("Failed to update localStorage with user data", error);
+    }
+  }, [user]);
 
   const login = (email: string, name: string = 'User') => {
-    setUser({ name, email });
+    const newUser = { name, email };
+    setUser(newUser);
   };
 
   const logout = () => {
