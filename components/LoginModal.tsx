@@ -9,14 +9,18 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initialMode = 'login' }) => {
   const [isRegister, setIsRegister] = useState(initialMode === 'register');
-  const [email, setEmail] = useState('user@example.com');
-  const [name, setName] = useState('Test User');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const { login } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
         setIsRegister(initialMode === 'register');
+        // Clear fields when modal is opened
+        setEmail('');
+        setName('');
+        setPassword('');
     }
   }, [isOpen, initialMode]);
 
@@ -42,7 +46,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity" onClick={onClose}>
-      <div className="bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md m-4" onClick={e => e.stopPropagation()}>
+      <div className="bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md m-4 relative" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
         <h2 className="text-2xl font-bold mb-6 text-center text-white">{isRegister ? 'Create an Account' : 'Log In'}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {isRegister && (
