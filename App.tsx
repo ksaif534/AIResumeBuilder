@@ -6,33 +6,38 @@ import { Chatbot } from './components/Chatbot';
 import { Header } from './components/Header';
 import { LoginModal } from './components/LoginModal';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Profile } from './components/Profile';
 
 const AppContent: React.FC = () => {
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-    const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+    const [authModalState, setAuthModalState] = useState<{isOpen: boolean, mode: 'login' | 'register'}>({isOpen: false, mode: 'login'});
     const [pendingPlanSelection, setPendingPlanSelection] = useState<Plan | null>(null);
+    const [showProfile, setShowProfile] = useState(false);
     
     const { user } = useAuth();
 
     useEffect(() => {
-        // If user logs in and there was a pending plan selection, complete it.
-        if (user && pendingPlanSelection) {
-            setSelectedPlan(pendingPlanSelection);
-            setPendingPlanSelection(null);
+        if (user) {
+            if (pendingPlanSelection) {
+                setSelectedPlan(pendingPlanSelection);
+                setPendingPlanSelection(null);
+                // Go to builder, so don't show profile.
+                setShowProfile(false);
+            } else {
+                // If just logging in without a pending plan, show profile.
+                setShowProfile(true);
+            }
+        } else {
+            // User logged out
+            setSelectedPlan(null);
+            setShowProfile(false);
         }
     }, [user, pendingPlanSelection]);
     
-    // Reset plan on logout
-    useEffect(() => {
-        if (!user) {
-            setSelectedPlan(null);
-        }
-    }, [user]);
-
     const handleSelectPlan = (plan: Plan) => {
         if (!user) {
             setPendingPlanSelection(plan);
-            setLoginModalOpen(true);
+            setAuthModalState({isOpen: true, mode: 'login'});
         } else {
             setSelectedPlan(plan);
         }
@@ -65,7 +70,9 @@ const AppContent: React.FC = () => {
         <div className="relative min-h-screen bg-gray-900">
             <Header
                 onNavigate={handleNavigate}
-                onLoginClick={() => setLoginModalOpen(true)}
+                onLoginClick={() => setAuthModalState({isOpen: true, mode: 'login'})}
+                onRegisterClick={() => setAuthModalState({isOpen: true, mode: 'register'})}
+                onProfileDoubleClick={() => setShowProfile(false)}
                 isBuilderActive={!!selectedPlan}
             />
             
@@ -80,9 +87,12 @@ const AppContent: React.FC = () => {
                 )}
             </main>
 
+            {showProfile && user && <Profile onClose={() => setShowProfile(false)} />}
+
             <LoginModal 
-                isOpen={isLoginModalOpen}
-                onClose={() => setLoginModalOpen(false)}
+                isOpen={authModalState.isOpen}
+                onClose={() => setAuthModalState({isOpen: false, mode: 'login'})}
+                initialMode={authModalState.mode}
             />
         </div>
     );

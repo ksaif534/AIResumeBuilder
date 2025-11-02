@@ -4,10 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 interface HeaderProps {
     onNavigate: (page: 'home' | 'about' | 'pricing' | 'builder') => void;
     onLoginClick: () => void;
+    onRegisterClick: () => void;
+    onProfileDoubleClick: () => void;
     isBuilderActive: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, isBuilderActive }) => {
+export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, onRegisterClick, onProfileDoubleClick, isBuilderActive }) => {
     const { user, logout } = useAuth();
     const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, isBuil
                     {/* Right Nav: Auth */}
                     <div className="hidden md:block">
                         {user ? (
-                            <div className="ml-4 flex items-center md:ml-6 relative">
+                            <div onDoubleClick={onProfileDoubleClick} className="ml-4 flex items-center md:ml-6 relative">
                                 <button onClick={() => setProfileMenuOpen(!isProfileMenuOpen)} type="button" className="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                     <span className="sr-only">Open user menu</span>
                                     <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-xs uppercase">
@@ -62,9 +64,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, isBuil
                                 )}
                             </div>
                         ) : (
-                            <button onClick={onLoginClick} className="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg text-sm hover:bg-indigo-500 transition-colors">
-                                Log In
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={onLoginClick} className="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg text-sm hover:bg-indigo-500 transition-colors">
+                                    Log In
+                                </button>
+                                <button onClick={onRegisterClick} className="bg-transparent border border-indigo-500 text-indigo-400 font-semibold px-4 py-2 rounded-lg text-sm hover:bg-indigo-500/20 transition-colors">
+                                    Sign Up
+                                </button>
+                            </div>
                         )}
                     </div>
 
@@ -107,9 +114,12 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, isBuil
                                 </div>
                             </>
                         ) : (
-                             <div className="px-5">
-                                <button onClick={() => { onLoginClick(); setMobileMenuOpen(false); }} className="w-full text-left bg-indigo-600 text-white font-semibold px-3 py-2 rounded-lg text-base hover:bg-indigo-500 transition-colors">
+                             <div className="px-5 flex flex-col gap-2">
+                                <button onClick={() => { onLoginClick(); setMobileMenuOpen(false); }} className="w-full text-center bg-indigo-600 text-white font-semibold px-3 py-2 rounded-lg text-base hover:bg-indigo-500 transition-colors">
                                     Log In
+                                </button>
+                                <button onClick={() => { onRegisterClick(); setMobileMenuOpen(false); }} className="w-full text-center bg-transparent border border-indigo-500 text-indigo-400 font-semibold px-3 py-2 rounded-lg text-base hover:bg-indigo-500/20 transition-colors">
+                                    Sign Up
                                 </button>
                             </div>
                         )}
