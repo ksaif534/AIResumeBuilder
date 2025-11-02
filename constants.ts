@@ -1,4 +1,3 @@
-
 import { Plan, PlanDetails, UserInfo, CoverLetterInfo } from './types';
 
 export const PRICING_PLANS: PlanDetails[] = [
@@ -25,6 +24,7 @@ export const PRICING_PLANS: PlanDetails[] = [
     ],
     model: 'gemini-2.5-pro',
     cta: 'Get Started',
+    priceId: 'price_basic_placeholder', // Placeholder Stripe Price ID
   },
   {
     name: Plan.Pro,
@@ -37,6 +37,7 @@ export const PRICING_PLANS: PlanDetails[] = [
     ],
     model: 'gemini-2.5-pro',
     cta: 'Go Pro',
+    priceId: 'price_pro_placeholder', // Placeholder Stripe Price ID
   },
 ];
 

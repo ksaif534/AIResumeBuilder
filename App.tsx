@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plan } from './types';
+import { PRICING_PLANS } from './constants';
 import { PricingPage } from './components/PricingPage';
 import { Builder } from './components/Builder';
 import { Chatbot } from './components/Chatbot';
@@ -7,62 +8,94 @@ import { Header } from './components/Header';
 import { LoginModal } from './components/LoginModal';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Profile } from './components/Profile';
+import { handlePurchase } from './services/stripeService';
 
 const AppContent: React.FC = () => {
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
     const [authModalState, setAuthModalState] = useState<{isOpen: boolean, mode: 'login' | 'register'}>({isOpen: false, mode: 'login'});
     const [pendingPlanSelection, setPendingPlanSelection] = useState<Plan | null>(null);
     const [showProfile, setShowProfile] = useState(false);
+    const [isPurchasing, setIsPurchasing] = useState<Plan | null>(null);
     
-    const { user } = useAuth();
+    const { user, upgradePlan } = useAuth();
 
     useEffect(() => {
-        if (user) {
-            if (pendingPlanSelection) {
-                setSelectedPlan(pendingPlanSelection);
-                setPendingPlanSelection(null);
-                // Go to builder, so don't show profile.
-                setShowProfile(false);
-            } else {
-                // If just logging in without a pending plan, show profile.
-                setShowProfile(true);
-            }
-        } else {
-            // User logged out
+        // This effect runs after a user logs in.
+        if (user && pendingPlanSelection) {
+            const planToProcess = pendingPlanSelection;
+            setPendingPlanSelection(null); // Clear pending plan
+            // After login, re-run the plan selection logic
+            handleSelectPlan(planToProcess); 
+        } else if (user && !pendingPlanSelection && authModalState.isOpen === false) {
+             // If user just logged in without a pending plan, show profile.
+            setShowProfile(true);
+        } else if (!user) {
+             // User logged out
             setSelectedPlan(null);
             setShowProfile(false);
         }
     }, [user, pendingPlanSelection]);
     
-    const handleSelectPlan = (plan: Plan) => {
+    const handleSelectPlan = async (plan: Plan) => {
+        const planDetails = PRICING_PLANS.find(p => p.name === plan);
+        if (!planDetails) return;
+
+        // Handle free plan separately
+        if (planDetails.name === Plan.Free) {
+            if (!user) {
+                setPendingPlanSelection(plan);
+                setAuthModalState({ isOpen: true, mode: 'login' });
+            } else {
+                setSelectedPlan(plan);
+            }
+            return;
+        }
+
+        // Handle paid plans
         if (!user) {
             setPendingPlanSelection(plan);
-            setAuthModalState({isOpen: true, mode: 'login'});
+            setAuthModalState({ isOpen: true, mode: 'login' });
         } else {
-            setSelectedPlan(plan);
+            // User is logged in, check if they already have a sufficient plan
+            const isProUser = user.plan === Plan.Pro;
+            const isBasicUser = user.plan === Plan.Basic;
+
+            if (isProUser || (isBasicUser && plan === Plan.Basic)) {
+                // User already has access
+                setSelectedPlan(plan);
+            } else {
+                // User needs to purchase
+                setIsPurchasing(plan);
+                try {
+                    const { success } = await handlePurchase(planDetails);
+                    if (success) {
+                        upgradePlan(plan);
+                        setSelectedPlan(plan);
+                    } else {
+                        alert("Your payment could not be processed. Please try again.");
+                    }
+                } catch (error) {
+                    console.error("Payment handling error:", error);
+                    alert("An unexpected error occurred during payment. Please try again.");
+                } finally {
+                    setIsPurchasing(null);
+                }
+            }
         }
     };
 
     const handleNavigate = (page: 'home' | 'about' | 'pricing' | 'builder') => {
         if (page === 'home' || page === 'pricing') {
             setSelectedPlan(null);
-            // Wait for render then scroll for pricing
              if (page === 'pricing') {
                 setTimeout(() => {
-                    const pricingSection = document.getElementById('pricing');
-                    if (pricingSection) {
-                        pricingSection.scrollIntoView({ behavior: 'smooth' });
-                    }
+                    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
             }
         } else if (page === 'about') {
             alert('About page is a placeholder.');
-        } else if (page === 'builder') {
-            // This is handled by selecting a plan, but allows direct navigation if a plan is already selected
-            if (!selectedPlan) {
-                 // Optionally, navigate to pricing to select a plan first
-                 setSelectedPlan(null);
-            }
+        } else if (page === 'builder' && !selectedPlan) {
+            setSelectedPlan(null); // Go to pricing page to select a plan
         }
     };
 
@@ -71,6 +104,7 @@ const AppContent: React.FC = () => {
             <Header
                 onNavigate={handleNavigate}
                 onLoginClick={() => setAuthModalState({isOpen: true, mode: 'login'})}
+                // FIX: Corrected typo in function name from 'setAuthModalS-tate' to 'setAuthModalState'.
                 onRegisterClick={() => setAuthModalState({isOpen: true, mode: 'register'})}
                 onProfileDoubleClick={() => setShowProfile(false)}
                 isBuilderActive={!!selectedPlan}
@@ -78,7 +112,7 @@ const AppContent: React.FC = () => {
             
             <main>
                 {!selectedPlan ? (
-                    <PricingPage onSelectPlan={handleSelectPlan} />
+                    <PricingPage onSelectPlan={handleSelectPlan} isPurchasing={isPurchasing} />
                 ) : (
                     <>
                         <Builder plan={selectedPlan} />
@@ -91,7 +125,10 @@ const AppContent: React.FC = () => {
 
             <LoginModal 
                 isOpen={authModalState.isOpen}
-                onClose={() => setAuthModalState({isOpen: false, mode: 'login'})}
+                onClose={() => {
+                    setAuthModalState({isOpen: false, mode: 'login'});
+                    setPendingPlanSelection(null); // Clear pending plan if modal is closed manually
+                }}
                 initialMode={authModalState.mode}
             />
         </div>

@@ -6,9 +6,10 @@ import { HeroResumeVisual } from './HeroResumeVisual';
 
 interface PricingPageProps {
   onSelectPlan: (plan: Plan) => void;
+  isPurchasing: Plan | null;
 }
 
-const PlanCard: React.FC<{ plan: PlanDetails; onSelect: () => void }> = ({ plan, onSelect }) => {
+const PlanCard: React.FC<{ plan: PlanDetails; onSelect: () => void; isPurchasing: boolean }> = ({ plan, onSelect, isPurchasing }) => {
   const isPro = plan.name === Plan.Pro;
   return (
     <div className={`relative flex flex-col p-8 rounded-2xl shadow-lg border ${isPro ? 'border-indigo-500 bg-gray-800' : 'border-gray-700 bg-gray-800/50'}`}>
@@ -35,16 +36,17 @@ const PlanCard: React.FC<{ plan: PlanDetails; onSelect: () => void }> = ({ plan,
       </ul>
       <button
         onClick={onSelect}
-        className={`mt-8 block rounded-md py-2 px-3 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${isPro ? 'bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500' : 'bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white'}`}
+        disabled={isPurchasing}
+        className={`mt-8 block rounded-md py-2 px-3 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-wait ${isPro ? 'bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500' : 'bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white'}`}
       >
-        {plan.cta}
+        {isPurchasing ? 'Processing...' : plan.cta}
       </button>
     </div>
   );
 };
 
 
-export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan, isPurchasing }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
       <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
@@ -91,7 +93,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan }) => {
             </div>
             <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
               {PRICING_PLANS.map(plan => (
-                <PlanCard key={plan.name} plan={plan} onSelect={() => onSelectPlan(plan.name as Plan)} />
+                <PlanCard key={plan.name} plan={plan} onSelect={() => onSelectPlan(plan.name as Plan)} isPurchasing={isPurchasing === plan.name} />
               ))}
             </div>
         </div>

@@ -1,4 +1,3 @@
-
 export enum Plan {
   Free = 'Free',
   Basic = 'Basic',
@@ -11,6 +10,7 @@ export interface PlanDetails {
   features: string[];
   model: string;
   cta: string;
+  priceId?: string; // For Stripe integration
 }
 
 export interface UserInfo {

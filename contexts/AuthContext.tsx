@@ -1,21 +1,23 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { Plan } from '../types';
 
 interface User {
   name: string;
   email: string;
+  plan?: Plan;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, name?: string) => void;
   logout: () => void;
+  upgradePlan: (plan: Plan) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    // Lazily initialize state from localStorage on component mount
     try {
       const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : null;
@@ -25,7 +27,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   });
 
-  // Effect to sync user state changes to localStorage
   useEffect(() => {
     try {
       if (user) {
@@ -39,7 +40,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user]);
 
   const login = (email: string, name: string = 'User') => {
-    const newUser = { name, email };
+    // When a new user logs in, they don't have a plan yet.
+    const newUser: User = { name, email, plan: user?.plan };
     setUser(newUser);
   };
 
@@ -47,8 +49,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const upgradePlan = (plan: Plan) => {
+    setUser(currentUser => {
+      if (!currentUser) return null;
+      return { ...currentUser, plan: plan };
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, upgradePlan }}>
       {children}
     </AuthContext.Provider>
   );
