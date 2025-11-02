@@ -1,10 +1,18 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Plan, UserInfo, CoverLetterInfo, WorkExperience, Education } from '../types';
 import { PRICING_PLANS, INITIAL_USER_INFO, INITIAL_COVER_LETTER_INFO } from '../constants';
 import { generateContent, generateContentWithSearch } from '../services/geminiService';
 import { ResumePreview } from './ResumePreview';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { CoverLetterPreview } from './CoverLetterPreview';
+
+// Add declarations for window-injected libraries to satisfy TypeScript
+declare global {
+    interface Window {
+        jspdf: any;
+        html2canvas: any;
+    }
+}
 
 interface BuilderProps {
   plan: Plan;
@@ -40,6 +48,8 @@ export const Builder: React.FC<BuilderProps> = ({ plan }) => {
   const [coverLetterInfo, setCoverLetterInfo] = useState<CoverLetterInfo>(INITIAL_COVER_LETTER_INFO);
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   const [coverLetterSources, setCoverLetterSources] = useState<any[]>([]);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const selectedPlanDetails = PRICING_PLANS.find(p => p.name === plan)!;
   const model = selectedPlanDetails.model;
@@ -47,8 +57,7 @@ export const Builder: React.FC<BuilderProps> = ({ plan }) => {
   const handleUserInfoChange = (field: keyof UserInfo, value: any) => {
     setUserInfo(prev => ({ ...prev, [field]: value }));
   };
-
-  // FIX: Corrected the generic type to properly associate the 'section' with the 'field' keys.
+  
   const handleNestedChange = <K extends 'experience' | 'education'>(
     section: K,
     id: string,
@@ -84,6 +93,65 @@ export const Builder: React.FC<BuilderProps> = ({ plan }) => {
         setLoadingStates(prev => ({ ...prev, [loaderKey]: false }));
     }
   }, [model]);
+
+  const handleDownloadPdf = async () => {
+    const element = previewRef.current;
+    if (!element) {
+        console.error("Preview element not found");
+        return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const html2canvas = window.html2canvas;
+
+        if (!jsPDF || !html2canvas) {
+            alert("PDF generation library is not loaded. Please refresh the page.");
+            setIsDownloading(false);
+            return;
+        }
+
+        const canvas = await html2canvas(element, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true,
+            logging: false,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        let heightLeft = pdfHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
+        heightLeft -= pdf.internal.pageSize.getHeight();
+
+        while (heightLeft > 0) {
+            position = heightLeft - pdfHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
+            heightLeft -= pdf.internal.pageSize.getHeight();
+        }
+        
+        const fileName = activeView === View.Resume 
+            ? `Resume-${userInfo.fullName.replace(/\s/g, '_')}.pdf`
+            : `CoverLetter-${userInfo.fullName.replace(/\s/g, '_')}.pdf`;
+            
+        pdf.save(fileName);
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("An error occurred while generating the PDF. Please try again.");
+    } finally {
+        setIsDownloading(false);
+    }
+  };
 
 
   return (
@@ -189,10 +257,27 @@ export const Builder: React.FC<BuilderProps> = ({ plan }) => {
       </div>
 
       {/* Right Panel: Preview */}
-      <div className="w-1/2 p-6 bg-gray-800 h-full">
-         <div className="h-full max-h-full">
-            <ResumePreview userInfo={userInfo} />
-         </div>
+      <div className="w-1/2 p-6 bg-gray-800 h-full flex flex-col">
+        <div className="mb-4 flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Preview</h2>
+            <button
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                {isDownloading ? 'Downloading...' : `Download ${activeView}`}
+            </button>
+        </div>
+        <div className="h-full max-h-full overflow-hidden" ref={previewRef}>
+            {activeView === View.Resume ? (
+                <ResumePreview userInfo={userInfo} />
+            ) : (
+                <CoverLetterPreview userInfo={userInfo} coverLetterInfo={coverLetterInfo} />
+            )}
+        </div>
       </div>
     </div>
   );
