@@ -83,17 +83,18 @@ const AppContent: React.FC = () => {
     };
 
     const handleNavigate = (page: 'home' | 'about' | 'pricing' | 'builder') => {
-        if (page === 'home' || page === 'pricing') {
+        if (page === 'home' || page === 'about' || page === 'pricing') {
             setSelectedPlan(null);
-             if (page === 'pricing') {
-                setTimeout(() => {
-                    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            }
-        } else if (page === 'about') {
-            alert('About page is a placeholder.');
-        } else if (page === 'builder' && !selectedPlan) {
-            setSelectedPlan(null); // Go to pricing page to select a plan
+    
+            // We need to wait for the PricingPage to render before we can scroll.
+            setTimeout(() => {
+                if (page === 'home') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    const element = document.getElementById(page);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
     };
 

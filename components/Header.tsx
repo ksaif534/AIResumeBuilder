@@ -19,9 +19,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, onRegi
         logout();
         setProfileMenuOpen(false);
         setMobileMenuOpen(false);
+        onNavigate('home');
     };
 
-    const handleNavClick = (page: 'home' | 'about' | 'pricing' | 'builder') => {
+    const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, page: 'home' | 'about' | 'pricing' | 'builder') => {
+        event.preventDefault();
         onNavigate(page);
         setMobileMenuOpen(false);
     }
@@ -50,16 +52,16 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, onRegi
                     {/* Logo and Left Nav */}
                     <div className="flex items-center">
                         <div className="flex-shrink-0">
-                            <a href="#" onClick={() => handleNavClick('home')} className="text-white font-bold text-xl">
+                            <a href="/" onClick={(e) => handleNavClick(e, 'home')} className="text-white font-bold text-xl">
                                 Resu<span className="text-indigo-400">AI</span>
                             </a>
                         </div>
                         <div className="hidden md:block">
                             <div className="ml-10 flex items-baseline space-x-4">
-                                <a href="#" onClick={() => handleNavClick('home')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                                <a href="#" onClick={() => handleNavClick('about')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">About</a>
-                                <a href="#pricing" onClick={() => handleNavClick('pricing')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Pricing</a>
-                                {user && isBuilderActive && <a href="#" onClick={() => handleNavClick('builder')} className="text-indigo-400 font-semibold hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm">Builder</a>}
+                                <a href="/" onClick={(e) => handleNavClick(e, 'home')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                                <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">About</a>
+                                <a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')} className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Pricing</a>
+                                {user && isBuilderActive && <a href="#" onClick={(e) => handleNavClick(e, 'builder')} className="text-indigo-400 font-semibold hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm">Builder</a>}
                             </div>
                         </div>
                     </div>
@@ -111,10 +113,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onLoginClick, onRegi
             {isMobileMenuOpen && (
                 <div className="md:hidden" id="mobile-menu">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <a href="#" onClick={() => handleNavClick('home')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
-                        <a href="#" onClick={() => handleNavClick('about')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a>
-                        <a href="#pricing" onClick={() => handleNavClick('pricing')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Pricing</a>
-                        {user && isBuilderActive && <a href="#" onClick={() => handleNavClick('builder')} className="text-indigo-400 font-semibold hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base">Builder</a>}
+                        <a href="/" onClick={(e) => handleNavClick(e, 'home')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                        <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a>
+                        <a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')} className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Pricing</a>
+                        {user && isBuilderActive && <a href="#" onClick={(e) => handleNavClick(e, 'builder')} className="text-indigo-400 font-semibold hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base">Builder</a>}
                     </div>
                     <div className="pt-4 pb-3 border-t border-gray-700">
                         {user ? (

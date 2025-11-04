@@ -12,35 +12,51 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, register } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
         setIsRegister(initialMode === 'register');
-        // Clear fields when modal is opened
+        // Clear fields and error when modal is opened
         setEmail('');
         setName('');
         setPassword('');
+        setError(null);
     }
   }, [isOpen, initialMode]);
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isRegister) {
-        if (email && password && name) {
-          login(email, name);
-          onClose();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (isRegister) {
+        if (!name || !email || !password) {
+          throw new Error("All fields are required for registration.");
         }
-    } else {
-        // Simulate login
-        if (email && password) {
-          const generatedName = email.split('@')[0].replace(/\./g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-          login(email, generatedName);
-          onClose();
+        await register(name, email, password);
+      } else {
+        if (!email || !password) {
+          throw new Error("Email and password are required to log in.");
         }
+        await login(email, password);
+      }
+      onClose(); // Close modal on success
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) setError(null); // Clear error on new input
+    setter(e.target.value);
+  }
 
   if (!isOpen) return null;
 
@@ -49,6 +65,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
       <div className="bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md m-4 relative" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
         <h2 className="text-2xl font-bold mb-6 text-center text-white">{isRegister ? 'Create an Account' : 'Log In'}</h2>
+        
+        {error && (
+            <div className="bg-red-900/50 border border-red-500 text-red-300 text-sm rounded-md p-3 mb-4 text-center">
+                {error}
+            </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {isRegister && (
             <div>
@@ -57,10 +80,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
                 type="text"
                 id="name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={handleInputChange(setName)}
                 className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="Your Name"
                 required
+                disabled={isLoading}
               />
             </div>
           )}
@@ -70,10 +94,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
               type="email"
               id="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={handleInputChange(setEmail)}
               className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               placeholder="you@example.com"
               required
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -82,22 +107,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, initial
               type="password"
               id="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={handleInputChange(setPassword)}
               className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               placeholder="••••••••"
               required
+              disabled={isLoading}
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500"
+            disabled={isLoading}
+            className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-wait"
           >
-            {isRegister ? 'Sign Up' : 'Log In'}
+            {isLoading ? (isRegister ? 'Creating Account...' : 'Logging In...') : (isRegister ? 'Sign Up' : 'Log In')}
           </button>
         </form>
          <p className="text-center text-sm text-gray-400 mt-6">
             {isRegister ? 'Already have an account?' : "Don't have an account?"}
-            <button onClick={() => setIsRegister(!isRegister)} className="font-medium text-indigo-400 hover:underline ml-1">
+            <button onClick={() => { setIsRegister(!isRegister); setError(null); }} className="font-medium text-indigo-400 hover:underline ml-1 disabled:opacity-50" disabled={isLoading}>
               {isRegister ? 'Log In' : 'Sign Up'}
             </button>
         </p>

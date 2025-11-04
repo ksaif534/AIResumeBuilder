@@ -47,6 +47,32 @@ const PlanCard: React.FC<{ plan: PlanDetails; onSelect: () => void; isPurchasing
 
 
 export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan, isPurchasing }) => {
+  const features = [
+    {
+      name: 'AI-Powered Content',
+      description: 'Generate professional summaries, experience bullet points, and entire cover letters with a single click. Our AI understands what recruiters look for.',
+      icon: SparklesIcon,
+    },
+    {
+      name: 'Smart Templates',
+      description: 'Choose from a variety of professional, recruiter-approved templates that are easy to parse for both humans and applicant tracking systems (ATS).',
+      icon: (props: {className?: string}) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Career Assistant Chatbot',
+      description: 'Get instant advice on your resume, cover letter, or interview preparation from our helpful AI chatbot, available 24/7.',
+      icon: (props: {className?: string}) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.388m-5.182-2.319a9.76 9.76 0 01-.388-2.531C3.75 7.444 7.78 3.75 12.75 3.75c4.97 0 9 3.694 9 8.25v.75Z" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
       <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
@@ -69,7 +95,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan, isPurcha
                     Our AI-powered builder helps you create professional, eye-catching resumes and cover letters in minutes. Stand out from the crowd and get your dream job.
                 </p>
                 <div className="mt-10">
-                    <a href="#pricing" className="bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/20">
+                    <a href="#pricing" onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }); }} className="bg-indigo-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/20">
                         Choose Your Plan
                     </a>
                 </div>
@@ -78,6 +104,36 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onSelectPlan, isPurcha
             {/* Visual Content */}
             <div className="hidden lg:flex justify-center items-center">
                 <HeroResumeVisual />
+            </div>
+        </div>
+
+        {/* --- Features Section (About) --- */}
+        <div id="about" className="py-20 sm:py-28">
+            <div className="mx-auto max-w-7xl">
+                <div className="mx-auto max-w-2xl lg:text-center">
+                    <h2 className="text-base font-semibold leading-7 text-indigo-400">Build Faster, Smarter</h2>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Everything you need to land your dream job</p>
+                    <p className="mt-6 text-lg leading-8 text-gray-300">
+                        Leverage the power of Google's Gemini AI to create compelling resumes and cover letters that stand out. Our tools analyze your experience and skills to generate professional content tailored to your target job.
+                    </p>
+                </div>
+                <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+                    <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+                        {features.map((feature) => (
+                            <div key={feature.name} className="flex flex-col">
+                                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-white">
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600">
+                                    <feature.icon className="h-6 w-6 text-white" aria-hidden="true" />
+                                  </div>
+                                  {feature.name}
+                                </dt>
+                                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-300">
+                                    <p className="flex-auto">{feature.description}</p>
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
             </div>
         </div>
         
